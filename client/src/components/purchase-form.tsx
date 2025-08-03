@@ -128,13 +128,20 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       }
 
       // Record transaction in database after blockchain confirmation
-      await createTransactionMutation.mutateAsync({
-        walletAddress: address,
-        currency: selectedCurrency,
-        payAmount: payAmount,
-        receiveAmount: receiveAmount,
-        referralCode: null,
-      });
+      try {
+        const dbResult = await createTransactionMutation.mutateAsync({
+          walletAddress: address,
+          currency: selectedCurrency,
+          payAmount: payAmount,
+          receiveAmount: receiveAmount,
+          referralCode: null,
+        });
+        console.log('Database transaction recorded:', dbResult);
+      } catch (dbError: any) {
+        console.error('Transaction API error:', dbError);
+        console.error('Transaction mutation error:', createTransactionMutation.error);
+        // Continue with success toast even if DB recording fails
+      }
 
       toast({
         title: "Success",
