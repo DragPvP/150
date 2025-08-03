@@ -81,10 +81,8 @@ var insertReferralCodeSchema = createInsertSchema(referralCodes).pick({
 // server/db.ts
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set");
-}
-var sql2 = neon(process.env.DATABASE_URL);
+var DATABASE_URL = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_s0BuDPOJY1rN@ep-frosty-feather-ae5igo6r-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+var sql2 = neon(DATABASE_URL);
 var db = drizzle(sql2, { schema: schema_exports });
 
 // server/db-storage.ts

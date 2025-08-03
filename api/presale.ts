@@ -10,13 +10,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Check if DATABASE_URL is set
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL is not set");
-    }
-
-    // Initialize database connection
-    const sql = neon(process.env.DATABASE_URL);
+    // Initialize database connection with hardcoded URL
+    const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_s0BuDPOJY1rN@ep-frosty-feather-ae5igo6r-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+    const sql = neon(DATABASE_URL);
     const db = drizzle(sql, { schema: { presaleData } });
 
     // Get presale data
