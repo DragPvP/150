@@ -59,8 +59,9 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       }
       
       if (!isNaN(numericAmount) && numericAmount > 0) {
-        setReceiveAmount(numericAmount.toLocaleString());
-        console.log('Set receive amount to:', numericAmount.toLocaleString());
+        const formattedAmount = numericAmount.toLocaleString();
+        setReceiveAmount(formattedAmount);
+        console.log('Set receive amount to:', formattedAmount, 'Raw amount:', numericAmount);
       } else {
         setReceiveAmount('');
         console.warn('Invalid token amount received:', tokenAmount);
@@ -200,8 +201,8 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
             </label>
             <div className="relative">
               <Input
-                type="number"
-                placeholder="173180.51"
+                type="text"
+                placeholder="227,500"
                 value={receiveAmount}
                 readOnly
                 className="input-3d w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-base"
