@@ -1,8 +1,19 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import { presaleData } from '../shared/schema';
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
+import { pgTable, varchar, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+
+// Inline schema definition for Vercel compatibility
+const presaleData = pgTable("presale_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  totalRaised: decimal("total_raised", { precision: 18, scale: 2 }).notNull().default("0"),
+  totalSupply: decimal("total_supply", { precision: 18, scale: 2 }).notNull().default("1000000"),
+  currentRate: decimal("current_rate", { precision: 18, scale: 8 }).notNull().default("47"),
+  stageEndTime: timestamp("stage_end_time").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {

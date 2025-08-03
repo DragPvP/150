@@ -14,6 +14,13 @@ The PEPEWUFF token presale website is now properly configured for Vercel deploym
 - All assets properly located in `client/public/img/`
 - API endpoints in `/api/` directory for Vercel compatibility
 - Build output in `dist/public/` directory
+- **FIXED**: Schema imports inlined in API files for Vercel serverless compatibility
+
+### 🔧 Vercel-Specific Fixes
+- Removed problematic import paths (`../shared/schema`)
+- Inlined database schema definitions in API endpoints
+- Updated Vercel configuration with proper rewrites
+- Ensured all API functions use `@vercel/node` runtime
 
 ### 🚀 Deployment Configuration
 - **Framework**: React + TypeScript with Vite
