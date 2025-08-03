@@ -95,7 +95,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
     try {
       toast({
         title: "Processing",
-        description: "Preparing blockchain transaction...",
+        description: "Confirm transaction in your wallet to complete the purchase",
       });
 
       // Handle different payment methods
