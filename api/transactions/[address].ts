@@ -4,17 +4,19 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { desc, eq } from 'drizzle-orm';
 
 // Database schema (inline for Vercel compatibility)
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, decimal, timestamp } from 'drizzle-orm/pg-core';
+import { sql as drizzleSql } from "drizzle-orm";
 
 const transactions = pgTable("transactions", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().default(drizzleSql`gen_random_uuid()`),
   walletAddress: text("wallet_address").notNull(),
   currency: text("currency").notNull(),
-  payAmount: text("pay_amount").notNull(),
-  receiveAmount: text("receive_amount").notNull(),
-  referralCode: text("referral_code"),
+  payAmount: decimal("pay_amount", { precision: 18, scale: 8 }).notNull(),
+  receiveAmount: decimal("receive_amount", { precision: 18, scale: 2 }).notNull(),
+  txHash: text("tx_hash"),
   status: text("status").notNull().default("pending"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  referralCode: text("referral_code"),
+  createdAt: timestamp("created_at").notNull().default(drizzleSql`CURRENT_TIMESTAMP`),
 });
 
 // Hardcoded database connection for Vercel deployment

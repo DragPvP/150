@@ -5,27 +5,29 @@ import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Database schema (inline for Vercel compatibility)
-import { pgTable, serial, text, decimal, timestamp, boolean, uuid as pgUuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, decimal, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { sql as drizzleSql } from "drizzle-orm";
 
-const presales = pgTable("presales", {
-  id: pgUuid("id").primaryKey().defaultRandom(),
-  totalRaised: decimal("total_raised", { precision: 20, scale: 8 }).notNull().default("0"),
-  totalSupply: decimal("total_supply", { precision: 20, scale: 8 }).notNull().default("200000"),
-  currentRate: decimal("current_rate", { precision: 20, scale: 8 }).notNull().default("65.00000000"),
+const presaleData = pgTable("presale_data", {
+  id: varchar("id").primaryKey().default(drizzleSql`gen_random_uuid()`),
+  totalRaised: decimal("total_raised", { precision: 18, scale: 2 }).notNull().default("0"),
+  totalSupply: decimal("total_supply", { precision: 18, scale: 2 }).notNull().default("1000000"),
+  currentRate: decimal("current_rate", { precision: 18, scale: 8 }).notNull().default("47"),
   stageEndTime: timestamp("stage_end_time").notNull(),
   isActive: boolean("is_active").notNull().default(true),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").notNull().default(drizzleSql`CURRENT_TIMESTAMP`),
 });
 
 const transactions = pgTable("transactions", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().default(drizzleSql`gen_random_uuid()`),
   walletAddress: text("wallet_address").notNull(),
   currency: text("currency").notNull(),
-  payAmount: text("pay_amount").notNull(),
-  receiveAmount: text("receive_amount").notNull(),
-  referralCode: text("referral_code"),
+  payAmount: decimal("pay_amount", { precision: 18, scale: 8 }).notNull(),
+  receiveAmount: decimal("receive_amount", { precision: 18, scale: 2 }).notNull(),
+  txHash: text("tx_hash"),
   status: text("status").notNull().default("pending"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  referralCode: text("referral_code"),
+  createdAt: timestamp("created_at").notNull().default(drizzleSql`CURRENT_TIMESTAMP`),
 });
 
 // Hardcoded database connection for Vercel deployment
@@ -74,18 +76,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const usdtEquivalent = receiveAmountNum / rate;
 
       // Get current presale data
-      const [currentPresale] = await db.select().from(presales).limit(1);
+      const [currentPresale] = await db.select().from(presaleData).limit(1);
       
       if (currentPresale) {
         const currentRaised = parseFloat(currentPresale.totalRaised);
         const newTotalRaised = currentRaised + usdtEquivalent;
         
-        await db.update(presales)
+        await db.update(presaleData)
           .set({ 
             totalRaised: newTotalRaised.toFixed(2),
             updatedAt: new Date()
           })
-          .where(eq(presales.id, currentPresale.id));
+          .where(eq(presaleData.id, currentPresale.id));
       }
 
       res.status(201).json(newTransaction);
