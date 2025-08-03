@@ -153,15 +153,7 @@ export function PresaleCard() {
               </span>
             </div>
             
-            {/* Purchased Amount */}
-            {totalPurchased > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Purchased:</span>
-                <span className="font-mono font-semibold text-green-600">
-                  {totalPurchased.toLocaleString()} $PEPEWUFF
-                </span>
-              </div>
-            )}
+
           </div>
         </div>
       )}
