@@ -18,10 +18,10 @@ const coinGeckoIds = {
   USDT: 'tether'
 };
 
-// Cache for prices (5 minute cache)
-let priceCache: { [key: string]: number } = {};
+// Cache for prices (30 second cache for faster response)
+let priceCache: { [key: string]: number } = fallbackRates; // Pre-populate with fallback rates
 let lastFetch = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 30 * 1000; // 30 seconds
 
 async function fetchLivePrices(): Promise<{ [key: string]: number }> {
   try {
@@ -39,8 +39,8 @@ async function fetchLivePrices(): Promise<{ [key: string]: number }> {
         headers: {
           'Accept': 'application/json',
         },
-        // Add timeout
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        // Reduce timeout for faster response
+        signal: AbortSignal.timeout(3000) // 3 second timeout
       }
     );
 

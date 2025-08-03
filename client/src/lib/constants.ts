@@ -36,6 +36,6 @@ export const REOWN_PROJECT_ID = '3385b7de1810bee8b8c43305bfbccf87';
 export const APP_METADATA = {
   name: 'PEPEWUFF Presale',
   description: 'PEPEWUFF Token Presale - Join the revolution',
-  url: 'https://pepewuff.com',
+  url: 'https://pepewuff.xyz',
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 };
