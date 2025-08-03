@@ -229,9 +229,14 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
             </div>
             <Button
               onClick={() => {
-                const shareUrl = `${window.location.origin}?ref=${address}`;
-                navigator.clipboard.writeText(shareUrl);
-                // You could add a toast notification here
+                if (address) {
+                  const shareUrl = `${window.location.origin}?ref=${address}`;
+                  navigator.clipboard.writeText(shareUrl);
+                  toast({
+                    title: "Share Link Copied!",
+                    description: `Your referral link has been copied to clipboard. Share it to earn 10% of purchased tokens!`,
+                  });
+                }
               }}
               className="btn-3d bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium hover:bg-gray-800 text-sm"
             >
