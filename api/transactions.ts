@@ -96,9 +96,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } catch (error) {
     console.error('Database error:', error);
+    console.error('Request body:', req.body);
+    console.error('Validation result:', insertTransactionSchema.safeParse(req.body));
     res.status(500).json({ 
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error : undefined
+      message: 'Failed to create transaction',
+      error: process.env.NODE_ENV === 'development' ? String(error) : undefined
     });
   }
 }
