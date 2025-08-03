@@ -48,6 +48,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
   useEffect(() => {
     if (calculateMutation.data && calculateMutation.data.tokenAmount !== undefined) {
       const tokenAmount: number | string = calculateMutation.data.tokenAmount;
+      console.log('Calculator response:', calculateMutation.data);
       // Handle both number and string responses safely
       let numericAmount: number;
       
@@ -59,6 +60,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       
       if (!isNaN(numericAmount) && numericAmount > 0) {
         setReceiveAmount(numericAmount.toLocaleString());
+        console.log('Set receive amount to:', numericAmount.toLocaleString());
       } else {
         setReceiveAmount('');
         console.warn('Invalid token amount received:', tokenAmount);
@@ -66,6 +68,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
     }
     // Clear receive amount if calculation fails
     if (calculateMutation.error) {
+      console.error('Calculator error:', calculateMutation.error);
       setReceiveAmount('');
     }
   }, [calculateMutation.data, calculateMutation.error]);
