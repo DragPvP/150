@@ -89,19 +89,45 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
     }
 
     try {
-      // For SOL - show payment modal
-      if (selectedCurrency === 'SOL') {
-        setIsSolanaModalOpen(true);
-        return;
-      }
-
       toast({
         title: "Processing",
-        description: "Recording your purchase...",
+        description: "Preparing blockchain transaction...",
       });
 
-      // For demo purposes, directly record the transaction
-      // In production, this would happen after blockchain confirmation
+      // Handle different payment methods
+      if (selectedCurrency === 'ETH' || selectedCurrency === 'BNB') {
+        // ETH/BNB payment to specified address
+        const value = parseEther(payAmount);
+        
+        await sendTransaction({
+          to: PRESALE_CONTRACT_ADDRESS,
+          value: value,
+          data: '0x',
+        });
+      } else if (selectedCurrency === 'SOL') {
+        // SOL payment - Open Solana payment modal
+        setIsSolanaModalOpen(true);
+        return;
+      } else {
+        // ERC20 token payment (USDT, USDC)
+        const tokenAddress = TOKEN_ADDRESSES.ETH[selectedCurrency as keyof typeof TOKEN_ADDRESSES.ETH];
+        if (!tokenAddress) {
+          throw new Error(`Unsupported token: ${selectedCurrency}`);
+        }
+
+        // Convert amount to proper decimals (USDT uses 6 decimals)
+        const decimals = selectedCurrency === 'USDT' ? 6 : 18;
+        const amount = parseUnits(payAmount, decimals);
+        
+        await writeContract({
+          address: tokenAddress,
+          abi: ERC20_ABI,
+          functionName: 'transfer',
+          args: [PRESALE_CONTRACT_ADDRESS, amount],
+        });
+      }
+
+      // Record transaction in database after blockchain confirmation
       await createTransactionMutation.mutateAsync({
         walletAddress: address,
         currency: selectedCurrency,
@@ -111,8 +137,8 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       });
 
       toast({
-        title: "Purchase Successful!",
-        description: `Successfully purchased ${receiveAmount} PEPEWUFF tokens for ${payAmount} ${selectedCurrency}`,
+        title: "Success",
+        description: "Transaction submitted to blockchain! Please wait for confirmation.",
       });
 
       // Reset form
@@ -120,24 +146,9 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       setReceiveAmount('');
     } catch (error: any) {
       console.error('Transaction failed:', error);
-      console.log('Error details:', {
-        message: error?.message,
-        status: error?.status,
-        response: error?.response,
-        stack: error?.stack
-      });
-      
-      // Check if the error has more details
-      let errorMessage = "Failed to process transaction";
-      if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-
       toast({
         title: "Transaction Failed",
-        description: errorMessage,
+        description: error?.message || "Failed to process blockchain transaction",
         variant: "destructive"
       });
     }

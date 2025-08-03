@@ -53,24 +53,12 @@ export function useCreateTransaction() {
   
   return useMutation<any, Error, InsertTransaction>({
     mutationFn: async (transactionData) => {
-      console.log('Sending transaction data:', transactionData);
-      try {
-        const response = await apiRequest("POST", "/api/transactions", transactionData);
-        const result = await response.json();
-        console.log('Transaction API response:', result);
-        return result;
-      } catch (error) {
-        console.error('Transaction API error:', error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/transactions", transactionData);
+      return response.json();
     },
-    onSuccess: (data) => {
-      console.log('Transaction mutation successful:', data);
+    onSuccess: () => {
       // Invalidate presale data to refresh the raised amount
       queryClient.invalidateQueries({ queryKey: ["/api/presale"] });
-    },
-    onError: (error) => {
-      console.error('Transaction mutation error:', error);
     },
   });
 }
