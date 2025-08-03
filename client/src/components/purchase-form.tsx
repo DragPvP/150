@@ -120,6 +120,12 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
       setReceiveAmount('');
     } catch (error: any) {
       console.error('Transaction failed:', error);
+      console.log('Error details:', {
+        message: error?.message,
+        status: error?.status,
+        response: error?.response,
+        stack: error?.stack
+      });
       
       // Check if the error has more details
       let errorMessage = "Failed to process transaction";
