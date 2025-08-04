@@ -5,7 +5,7 @@ import { useCalculateTokens, useCreateTransaction } from '@/hooks/use-presale';
 import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
 import { useToast } from '@/hooks/use-toast';
 import { CURRENCIES, type CurrencyId } from '@/lib/constants';
-import { useSendTransaction, useWriteContract, useSwitchChain, useChainId } from 'wagmi';
+import { useSendTransaction, useWriteContract, useSwitchChain } from 'wagmi';
 import { parseEther, parseUnits } from 'viem';
 import { PRESALE_CONTRACT_ADDRESS, ERC20_ABI, PRESALE_ABI, TOKEN_ADDRESSES, SOLANA_WALLET_ADDRESS, CHAIN_IDS } from '@/lib/contracts';
 import { SolanaPaymentModal } from './solana-payment-modal';
@@ -28,7 +28,6 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
   const { sendTransaction, isPending: isTransactionPending } = useSendTransaction();
   const { writeContract, isPending: isContractPending } = useWriteContract();
   const { switchChain } = useSwitchChain();
-  const currentChainId = useChainId();
 
   const selectedCurrencyInfo = CURRENCIES.find(c => c.id === selectedCurrency);
 
@@ -105,25 +104,11 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
         // Switch to the correct network based on currency
         const targetChainId = selectedCurrency === 'BNB' ? CHAIN_IDS.BSC : CHAIN_IDS.ETH;
         
-        // Only switch if we're not already on the target network
-        if (currentChainId !== targetChainId) {
-          try {
-            console.log(`Switching from chain ${currentChainId} to ${targetChainId} for ${selectedCurrency}`);
-            await switchChain({ chainId: targetChainId });
-            
-            // Give the network switch a moment to complete
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            console.log(`Network switched successfully to ${targetChainId}`);
-          } catch (switchError) {
-            console.warn('Network switch failed or was cancelled:', switchError);
-            toast({
-              title: "Network Switch Required",
-              description: `Please manually switch to ${selectedCurrency === 'BNB' ? 'BSC' : 'Ethereum'} network in your wallet and try again.`,
-              variant: "destructive"
-            });
-            return;
-          }
+        try {
+          await switchChain({ chainId: targetChainId });
+        } catch (switchError) {
+          console.warn('Network switch failed or was cancelled:', switchError);
+          // Continue with the transaction on current network if switch fails
         }
         
         // ETH/BNB payment to specified address
