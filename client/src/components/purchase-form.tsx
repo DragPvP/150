@@ -5,9 +5,9 @@ import { useCalculateTokens, useCreateTransaction } from '@/hooks/use-presale';
 import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
 import { useToast } from '@/hooks/use-toast';
 import { CURRENCIES, type CurrencyId } from '@/lib/constants';
-import { useSendTransaction, useWriteContract } from 'wagmi';
+import { useSendTransaction, useWriteContract, useSwitchChain } from 'wagmi';
 import { parseEther, parseUnits } from 'viem';
-import { PRESALE_CONTRACT_ADDRESS, ERC20_ABI, PRESALE_ABI, TOKEN_ADDRESSES, SOLANA_WALLET_ADDRESS } from '@/lib/contracts';
+import { PRESALE_CONTRACT_ADDRESS, ERC20_ABI, PRESALE_ABI, TOKEN_ADDRESSES, SOLANA_WALLET_ADDRESS, CHAIN_IDS } from '@/lib/contracts';
 import { SolanaPaymentModal } from './solana-payment-modal';
 
 interface PurchaseFormProps {
@@ -27,6 +27,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
   const createTransactionMutation = useCreateTransaction();
   const { sendTransaction, isPending: isTransactionPending } = useSendTransaction();
   const { writeContract, isPending: isContractPending } = useWriteContract();
+  const { switchChain } = useSwitchChain();
 
   const selectedCurrencyInfo = CURRENCIES.find(c => c.id === selectedCurrency);
 
@@ -100,6 +101,16 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
 
       // Handle different payment methods
       if (selectedCurrency === 'ETH' || selectedCurrency === 'BNB') {
+        // Switch to the correct network based on currency
+        const targetChainId = selectedCurrency === 'BNB' ? CHAIN_IDS.BSC : CHAIN_IDS.ETH;
+        
+        try {
+          await switchChain({ chainId: targetChainId });
+        } catch (switchError) {
+          console.warn('Network switch failed or was cancelled:', switchError);
+          // Continue with the transaction on current network if switch fails
+        }
+        
         // ETH/BNB payment to specified address
         const value = parseEther(payAmount);
         
@@ -107,13 +118,15 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
           to: PRESALE_CONTRACT_ADDRESS,
           value: value,
           data: '0x',
+          chainId: targetChainId,
         });
       } else if (selectedCurrency === 'SOL') {
         // SOL payment - Open Solana payment modal
         setIsSolanaModalOpen(true);
         return;
       } else {
-        // ERC20 token payment (USDT, USDC)
+        // ERC20 token payment (USDT, USDC) - default to ETH network for now
+        // Note: Could be enhanced to detect current network and use appropriate token address
         const tokenAddress = TOKEN_ADDRESSES.ETH[selectedCurrency as keyof typeof TOKEN_ADDRESSES.ETH];
         if (!tokenAddress) {
           throw new Error(`Unsupported token: ${selectedCurrency}`);
@@ -137,7 +150,7 @@ export function PurchaseForm({ selectedCurrency }: PurchaseFormProps) {
           walletAddress: address,
           currency: selectedCurrency,
           payAmount: payAmount,
-          receiveAmount: receiveAmount,
+          receiveAmount: receiveAmount.replace(/,/g, ''), // Remove commas for API
           referralCode: null,
         });
         console.log('Database transaction recorded:', dbResult);
