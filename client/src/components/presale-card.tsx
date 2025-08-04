@@ -14,7 +14,7 @@ import { ERC20_ABI, PEPEWUFF_TOKEN_ADDRESS } from '@/lib/contracts';
 import type { CurrencyId } from '@/lib/constants';
 
 export function PresaleCard() {
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyId>('ETH');
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyId>('BNB');
   const [directData, setDirectData] = useState<any>(null);
   const [directLoading, setDirectLoading] = useState(true);
   const [tokenBalance, setTokenBalance] = useState<string>('0');
